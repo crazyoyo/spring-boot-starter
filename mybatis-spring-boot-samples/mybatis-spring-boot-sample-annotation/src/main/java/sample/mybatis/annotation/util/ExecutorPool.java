@@ -13,24 +13,25 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package sample.mybatis.annotation.mapper;
+package sample.mybatis.annotation.util;
 
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
+import java.util.concurrent.*;
 
-import sample.mybatis.annotation.domain.City;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-/**
- * @author Eddú Meléndez
- */
-@Mapper
-public interface CityMapper {
+@Configuration
+public class ExecutorPool {
+  @Bean
+  public ThreadPoolExecutor threadPoolExecutor() {
+    ThreadPoolExecutor executor = new ThreadPoolExecutor(50, 80, 5, TimeUnit.SECONDS, new ArrayBlockingQueue<>(100));
+    executor.allowCoreThreadTimeOut(true);
+    return executor;
+  }
 
-  @Select("select id, name, state, state, country from city where name = #{name}")
-  City findByName(@Param("name") String name);
-
-  @Insert("insert into city (name, state, country) values (#{name}, #{state}, #{country})")
-  void insert(City city);
+  @Bean
+  public ScheduledExecutorService oneThreadExecutor() {
+    ScheduledExecutorService executor = Executors.newScheduledThreadPool(5);
+    return executor;
+  }
 }

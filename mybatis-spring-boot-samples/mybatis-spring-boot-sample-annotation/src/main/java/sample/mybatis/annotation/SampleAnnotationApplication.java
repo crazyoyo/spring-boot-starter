@@ -1,5 +1,5 @@
 /*
- *    Copyright 2015-2022 the original author or authors.
+ *    Copyright 2015-2024 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,11 +15,19 @@
  */
 package sample.mybatis.annotation;
 
+import java.util.Arrays;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import sample.mybatis.annotation.mapper.CityMapper;
+import sample.mybatis.annotation.util.RunSingleTask;
+import sample.mybatis.annotation.util.RunTask;
 
 @SpringBootApplication
 public class SampleAnnotationApplication implements CommandLineRunner {
@@ -28,16 +36,43 @@ public class SampleAnnotationApplication implements CommandLineRunner {
     SpringApplication.run(SampleAnnotationApplication.class, args);
   }
 
-  private final CityMapper cityMapper;
+  @Autowired
+  private SqlSessionTemplate sqlSessionTemplate;
 
-  public SampleAnnotationApplication(CityMapper cityMapper) {
-    this.cityMapper = cityMapper;
-  }
+  @Autowired
+  private ThreadPoolExecutor threadPoolExecutor;
+
+  @Autowired
+  ScheduledExecutorService oneThreadExecutor;
 
   @Override
   @SuppressWarnings("squid:S106")
   public void run(String... args) {
-    System.out.println(this.cityMapper.findByState("CA"));
-  }
+    System.out.println("SampleAnnotationApplication:" + Arrays.toString(args));
+    int exe_size = Integer.parseInt(args[0]);
 
+    if (exe_size == 1) {
+      oneThreadExecutor.scheduleAtFixedRate(new RunSingleTask(sqlSessionTemplate), 2, 2, TimeUnit.SECONDS);
+    }
+
+    else {
+      for (int i = 0; i < exe_size; i++) {
+        threadPoolExecutor.execute(new RunTask(sqlSessionTemplate));
+      }
+      threadPoolExecutor.shutdown();
+      long t1 = System.currentTimeMillis();
+
+      while (true) {
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+        if (threadPoolExecutor.isTerminated()) {
+          System.out.println("都结束了！耗时：" + ((System.currentTimeMillis() - t1) / 1000) + "s");
+          break;
+        }
+      }
+    }
+  }
 }

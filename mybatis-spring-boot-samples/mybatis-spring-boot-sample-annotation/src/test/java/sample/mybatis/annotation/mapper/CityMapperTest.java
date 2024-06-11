@@ -1,5 +1,5 @@
 /*
- *    Copyright 2015-2022 the original author or authors.
+ *    Copyright 2015-2024 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ class CityMapperTest {
 
   @Test
   void findByStateTest() {
-    City city = cityMapper.findByState("CA");
+    City city = cityMapper.findByName("San Francisco");
     assertThat(city.getId()).isEqualTo(1);
     assertThat(city.getName()).isEqualTo("San Francisco");
     assertThat(city.getState()).isEqualTo("CA");

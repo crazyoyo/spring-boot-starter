@@ -1,5 +1,5 @@
 --
---    Copyright 2015-2022 the original author or authors.
+--    Copyright 2015-2024 the original author or authors.
 --
 --    Licensed under the Apache License, Version 2.0 (the "License");
 --    you may not use this file except in compliance with the License.
@@ -16,5 +16,11 @@
 
 drop table if exists city;
 
-create table city (id int primary key auto_increment, name varchar, state varchar, country varchar);
+CREATE TABLE city (
+    id int NOT NULL AUTO_INCREMENT,
+    name varchar(255),
+    state varchar(255),
+    country varchar(255),
+    PRIMARY KEY (id)
+);
 
